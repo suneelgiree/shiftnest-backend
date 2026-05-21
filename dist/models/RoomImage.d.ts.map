@@ -1,0 +1,1 @@
+{"version":3,"file":"RoomImage.d.ts","sourceRoot":"","sources":["../../src/models/RoomImage.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,IAAI,EAAE,MAAM,QAAQ,CAAC;AAE9B,qBACa,SAAS;IAEpB,EAAE,EAAE,MAAM,CAAC;IAGX,QAAQ,EAAE,MAAM,CAAC;IAGjB,UAAU,EAAE,MAAM,CAAC;IAGnB,SAAS,EAAE,OAAO,CAAC;IAInB,IAAI,EAAE,IAAI,CAAC;IAGX,MAAM,EAAE,MAAM,CAAC;CAChB"}
