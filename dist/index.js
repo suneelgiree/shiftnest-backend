@@ -16,6 +16,9 @@ const requestLogger_1 = require("./middleware/requestLogger");
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const shiftRoutes_1 = __importDefault(require("./routes/shiftRoutes"));
 const assignmentRoutes_1 = __importDefault(require("./routes/assignmentRoutes"));
+const authRoutes_1 = __importDefault(require("./routes/authRoutes"));
+const roomRoutes_1 = __importDefault(require("./routes/roomRoutes"));
+const shiftBookingRoutes_1 = __importDefault(require("./routes/shiftBookingRoutes"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
@@ -34,9 +37,12 @@ app.get('/health', (req, res) => {
     res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 // API Routes
+app.use('/api/auth', authRoutes_1.default);
 app.use('/api/users', userRoutes_1.default);
 app.use('/api/shifts', shiftRoutes_1.default);
 app.use('/api/assignments', assignmentRoutes_1.default);
+app.use('/api/rooms', roomRoutes_1.default);
+app.use('/api/shift-bookings', shiftBookingRoutes_1.default);
 // 404 handler
 app.use((req, res) => {
     res.status(404).json({

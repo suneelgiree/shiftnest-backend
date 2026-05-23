@@ -1,3 +1,4 @@
+import { Review } from './Review';
 import { Room } from './Room';
 import { RoomBooking } from './RoomBooking';
 import { SavedRoom } from './SavedRoom';
@@ -12,6 +13,7 @@ export declare class User {
     rooms: Room[];
     roomBookings: RoomBooking[];
     savedRooms: SavedRoom[];
+    reviews: Review[];
     createdAt: Date;
     updatedAt: Date;
 }

@@ -1,3 +1,4 @@
+import { Review } from './Review';
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Room } from './Room';
 import { RoomBooking } from './RoomBooking';
@@ -26,6 +27,9 @@ export class User {
   @Column({ type: 'varchar', default: 'employee' })
   role: string;
 
+  @Column({ type: 'varchar', nullable: true })
+  avatarUrl: string;
+
   @OneToMany(() => Room, (room) => room.owner)
   rooms: Room[];
 
@@ -34,6 +38,9 @@ export class User {
 
   @OneToMany(() => SavedRoom, (saved) => saved.user)
   savedRooms: SavedRoom[];
+
+  @OneToMany(() => Review, (r) => r.reviewer)
+  reviews: Review[];
 
   @CreateDateColumn()
   createdAt: Date;

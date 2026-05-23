@@ -13,6 +13,11 @@ import { requestLogger } from './middleware/requestLogger';
 import userRoutes from './routes/userRoutes';
 import shiftRoutes from './routes/shiftRoutes';
 import assignmentRoutes from './routes/assignmentRoutes';
+import authRoutes from './routes/authRoutes';
+import roomRoutes from './routes/roomRoutes';
+import shiftBookingRoutes from './routes/shiftBookingRoutes';
+import paymentRoutes from './routes/paymentRoutes';
+import reviewRoutes from './routes/reviewRoutes';
 
 dotenv.config();
 
@@ -36,9 +41,14 @@ app.get('/health', (req, res) => {
 });
 
 // API Routes
+app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/shifts', shiftRoutes);
 app.use('/api/assignments', assignmentRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/shift-bookings', shiftBookingRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/reviews', reviewRoutes);
 
 // 404 handler
 app.use((req, res) => {

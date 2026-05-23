@@ -10,6 +10,7 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.User = void 0;
+const Review_1 = require("./Review");
 const typeorm_1 = require("typeorm");
 const Room_1 = require("./Room");
 const RoomBooking_1 = require("./RoomBooking");
@@ -57,6 +58,10 @@ __decorate([
     (0, typeorm_1.OneToMany)(() => SavedRoom_1.SavedRoom, (saved) => saved.user),
     __metadata("design:type", Array)
 ], User.prototype, "savedRooms", void 0);
+__decorate([
+    (0, typeorm_1.OneToMany)(() => Review_1.Review, (r) => r.reviewer),
+    __metadata("design:type", Array)
+], User.prototype, "reviews", void 0);
 __decorate([
     (0, typeorm_1.CreateDateColumn)(),
     __metadata("design:type", Date)
