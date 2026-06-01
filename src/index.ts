@@ -23,6 +23,7 @@ import shiftBookingRoutes from './routes/shiftBookingRoutes';
 import paymentRoutes     from './routes/paymentRoutes';
 import reviewRoutes      from './routes/reviewRoutes';
 import adminRoutes       from './routes/adminRoutes';
+import subscriptionRoutes from './routes/subscriptionRoutes';
 
 dotenv.config();
 
@@ -56,6 +57,7 @@ app.use('/api/reviews',        reviewRoutes);
 app.use('/api/admin',          adminRoutes);
 app.use('/api/shifts',         shiftRoutes);
 app.use('/api/assignments',    assignmentRoutes);
+app.use('/api/subscription',   subscriptionRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found', path: req.path });

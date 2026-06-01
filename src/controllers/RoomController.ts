@@ -5,11 +5,14 @@ import { RoomFacility } from '../models/RoomFacility';
 import { RoomImage } from '../models/RoomImage';
 import { sendSuccess, sendError } from '../utils/response';
 import { Logger } from '../utils/logger';
+import { User } from '../models/User';
+import { hasActiveAccess } from './SubscriptionController';
 
 export class RoomController {
   private roomRepository = AppDataSource.getRepository(Room);
   private roomFacilityRepository = AppDataSource.getRepository(RoomFacility);
   private roomImageRepository = AppDataSource.getRepository(RoomImage);
+  private userRepository = AppDataSource.getRepository(User);
 
   // Create new room (Owner only)
   async createRoom(req: Request, res: Response) {
@@ -110,7 +113,6 @@ export class RoomController {
   async getRoomById(req: Request, res: Response) {
     try {
       const { id } = req.params;
-
       const room = await this.roomRepository
         .createQueryBuilder('room')
         .leftJoinAndSelect('room.owner', 'owner')
@@ -119,12 +121,21 @@ export class RoomController {
         .where('room.id = :id', { id })
         .orderBy('images.orderIndex', 'ASC')
         .getOne();
-
       if (!room) {
         return sendError(res, 'Room not found', 404);
       }
 
-      return sendSuccess(res, 'Room fetched successfully', this.formatRoomDetailResponse(room));
+      // Reveal owner contact + exact location only if the viewer has paid access.
+      let unlocked = false;
+      if (req.user?.id) {
+        const viewer = await this.userRepository.findOne({
+          where: { id: req.user.id },
+          select: ['id', 'accessExpiresAt'],
+        });
+        unlocked = hasActiveAccess(viewer || {});
+      }
+
+      return sendSuccess(res, 'Room fetched successfully', this.formatRoomDetailResponse(room, unlocked));
     } catch (error) {
       Logger.error('Get room error', error);
       return sendError(res, 'Failed to fetch room', 500, error);
@@ -262,7 +273,7 @@ export class RoomController {
     };
   }
 
-  private formatRoomDetailResponse(room: Room | null) {
+  private formatRoomDetailResponse(room: Room | null, unlocked = false) {
     if (!room) return null;
     return {
       id: room.id,
@@ -271,8 +282,9 @@ export class RoomController {
       price: `NPR ${parseInt(room.price.toString()).toLocaleString('en-US')}`,
       location: room.location,
       city: room.city,
-      latitude: room.latitude,
-      longitude: room.longitude,
+      // exact coordinates gated behind access
+      latitude: unlocked ? room.latitude : null,
+      longitude: unlocked ? room.longitude : null,
       roomType: room.roomType,
       bedrooms: room.bedrooms,
       bathrooms: room.bathrooms,
@@ -283,14 +295,20 @@ export class RoomController {
         index: `${idx + 1}/${room.images.length}`,
       })) || [],
       facilities: room.facilities?.map((f) => f.facility) || [],
-      owner: {
-        id: room.owner?.id,
-        name: `${room.owner?.firstName} ${room.owner?.lastName}`,
-        phone: room.owner?.phone,
-        email: room.owner?.email,
-        locked: true,
-      },
-      createdAt: room.createdAt,
+      locked: !unlocked,
+      owner: unlocked
+        ? {
+            id: room.owner?.id,
+            name: `${room.owner?.firstName} ${room.owner?.lastName}`,
+            phone: room.owner?.phone,
+            email: room.owner?.email,
+            locked: false,
+          }
+        : {
+            // identity hidden until paid
+            locked: true,
+          },
     };
   }
 }
+

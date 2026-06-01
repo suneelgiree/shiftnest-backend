@@ -24,11 +24,14 @@ export class User {
   @Column({ type: 'varchar', nullable: true })
   phone: string;
 
-  @Column({ type: 'varchar', default: 'employee' })
+  @Column({ type: 'varchar', default: 'user' })
   role: string;
 
   @Column({ type: 'varchar', nullable: true })
   avatarUrl: string;
+
+  @Column({ type: 'timestamp', nullable: true })
+  accessExpiresAt: Date | null;
 
   @OneToMany(() => Room, (room) => room.owner)
   rooms: Room[];

@@ -33,6 +33,24 @@ export const requireAuth = (req: Request, res: Response, next: NextFunction) => 
   }
 };
 
+// Like requireAuth but never rejects: if a valid token is present, sets
+// req.user; otherwise leaves it undefined and continues. For public routes
+// that reveal extra data to authenticated/paid users.
+export const optionalAuth = (req: Request, _res: Response, next: NextFunction) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader?.startsWith('Bearer ')) return next();
+  const token = authHeader.split(' ')[1];
+  try {
+    const secret = process.env.JWT_SECRET;
+    if (secret) {
+      req.user = jwt.verify(token, secret) as AuthUser;
+    }
+  } catch {
+    // invalid token -> just treat as anonymous
+  }
+  next();
+};
+
 export const requireRole = (...roles: string[]) => {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) return sendError(res, 'Unauthorized', 401);

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { RoomController } from '../controllers/RoomController';
 import { RoomBookingController } from '../controllers/RoomBookingController';
 import { SavedRoomController } from '../controllers/SavedRoomController';
-import { requireAuth, requireRole } from '../middleware/auth';
+import { requireAuth, requireRole, optionalAuth } from '../middleware/auth';
 import { ImageController } from '../controllers/ImageController';
 import { upload } from '../middleware/upload';
 import { uploadLimiter } from '../middleware/rateLimiter';
@@ -17,7 +17,7 @@ const imageCtrl = new ImageController();
 router.get('/popular-areas', (req, res) => roomCtrl.getPopularAreas(req, res));
 router.get('/recommended',   (req, res) => roomCtrl.getRecommendedRooms(req, res));
 router.get('/',              (req, res) => roomCtrl.getRooms(req, res));
-router.get('/:id',           (req, res) => roomCtrl.getRoomById(req, res));
+router.get('/:id', optionalAuth, (req, res) => roomCtrl.getRoomById(req, res));
 
 // --- Owner only ---
 router.post('/',      requireAuth, requireRole('owner', 'admin'), (req, res) => roomCtrl.createRoom(req, res));
