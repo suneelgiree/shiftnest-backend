@@ -134,6 +134,37 @@ export class AuthController {
     }
   }
 
+  async updateRole(req: Request, res: Response) {
+    try {
+      const { role } = req.body;
+      const allowedRoles = ['user', 'owner']; // extend if Shifting is added
+      if (!allowedRoles.includes(role)) {
+        return sendError(res, `role must be one of: ${allowedRoles.join(', ')}`, 400);
+      }
+      const user = await this.userRepository.findOne({ where: { id: req.user!.id } });
+      if (!user) return sendError(res, 'User not found', 404);
+
+      user.role = role;
+      await this.userRepository.save(user);
+
+      // Re-issue tokens so the new role is reflected immediately.
+      const accessToken = this.signAccess(user);
+      const refreshToken = this.signRefresh(user);
+      Logger.info(`Role switched: ${user.email} -> ${role}`);
+      return sendSuccess(res, 'Role updated', {
+        accessToken, refreshToken,
+        user: {
+          id: user.id, email: user.email,
+          firstName: user.firstName, lastName: user.lastName,
+          role: user.role, phone: user.phone,
+        },
+      });
+    } catch (error) {
+      Logger.error('Update role error', error);
+      return sendError(res, 'Failed to update role', 500);
+    }
+  }
+
   async changePassword(req: Request, res: Response) {
     try {
       const { currentPassword, newPassword } = req.body;

@@ -10,6 +10,7 @@ router.post('/login',            (req, res) => ctrl.login(req, res));
 router.post('/refresh-token',    (req, res) => ctrl.refreshToken(req, res));
 router.get('/me',   requireAuth, (req, res) => ctrl.getMe(req, res));
 router.put('/me',   requireAuth, (req, res) => ctrl.updateMe(req, res));
+router.put('/role', requireAuth, (req, res) => ctrl.updateRole(req, res));
 router.put('/change-password', requireAuth, (req, res) => ctrl.changePassword(req, res));
 
 export default router;

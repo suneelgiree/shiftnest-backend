@@ -16,6 +16,7 @@ const imageCtrl = new ImageController();
 // --- Public ---
 router.get('/popular-areas', (req, res) => roomCtrl.getPopularAreas(req, res));
 router.get('/recommended',   (req, res) => roomCtrl.getRecommendedRooms(req, res));
+router.get('/my', requireAuth, requireRole('owner', 'admin'), (req, res) => roomCtrl.getMyRooms(req, res));
 router.get('/',              (req, res) => roomCtrl.getRooms(req, res));
 router.get('/:id', optionalAuth, (req, res) => roomCtrl.getRoomById(req, res));
 
@@ -27,6 +28,7 @@ router.delete('/:id', requireAuth, requireRole('owner', 'admin'), (req, res) => 
 // --- Bookings ---
 router.post('/bookings',           requireAuth, (req, res) => bookingCtrl.bookRoom(req, res));
 router.get('/bookings/my',         requireAuth, (req, res) => bookingCtrl.getMyBookings(req, res));
+router.get('/bookings/owner', requireAuth, (req, res) => bookingCtrl.getOwnerBookings(req, res));
 router.get('/bookings/:id',        requireAuth, (req, res) => bookingCtrl.getBookingById(req, res));
 router.put('/bookings/:id/cancel', requireAuth, (req, res) => bookingCtrl.cancelBooking(req, res));
 

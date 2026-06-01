@@ -109,6 +109,25 @@ export class RoomController {
     }
   }
 
+  // Get rooms owned by the logged-in user
+  async getMyRooms(req: Request, res: Response) {
+    try {
+      const ownerId = (req as any).user?.id;
+      if (!ownerId) return sendError(res, 'Unauthorized', 401);
+      const rooms = await this.roomRepository
+        .createQueryBuilder('room')
+        .leftJoinAndSelect('room.images', 'images')
+        .leftJoinAndSelect('room.facilities', 'facilities')
+        .where('room.ownerId = :ownerId', { ownerId })
+        .orderBy('room.createdAt', 'DESC')
+        .getMany();
+      return sendSuccess(res, 'My rooms fetched', rooms.map((r) => this.formatRoomResponse(r)));
+    } catch (error) {
+      Logger.error('Get my rooms error', error);
+      return sendError(res, 'Failed to fetch your rooms', 500, error);
+    }
+  }
+
   // Get room details
   async getRoomById(req: Request, res: Response) {
     try {

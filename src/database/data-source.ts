@@ -26,6 +26,8 @@ export const AppDataSource = new DataSource({
   require('../models/ShiftBooking').ShiftBooking,
   require('../models/Payment').Payment,
   require('../models/Review').Review,
+  require('../models/Conversation').Conversation,
+  require('../models/Message').Message,
   ],
   migrations: ['dist/database/migrations/**/*.js'],
   subscribers: ['dist/database/subscribers/**/*.js'],

@@ -174,4 +174,40 @@ export class RoomBookingController {
       return sendError(res, 'Failed to cancel booking', 500, error);
     }
   }
+
+  // Bookings made on rooms owned by the logged-in user
+  async getOwnerBookings(req: Request, res: Response) {
+    try {
+      const ownerId = (req as any).user?.id;
+      if (!ownerId) return sendError(res, 'Unauthorized', 401);
+      const bookings = await this.roomBookingRepository
+        .createQueryBuilder('booking')
+        .leftJoinAndSelect('booking.room', 'room')
+        .leftJoinAndSelect('booking.user', 'tenant')
+        .leftJoinAndSelect('room.images', 'images')
+        .where('room.ownerId = :ownerId', { ownerId })
+        .orderBy('booking.bookingDate', 'DESC')
+        .getMany();
+      return sendSuccess(res, 'Owner bookings fetched', bookings.map((b) => ({
+        bookingId: b.bookingId,
+        status: b.status,
+        amount: `NPR ${b.bookingFee}`,
+        bookingDate: b.bookingDate,
+        notes: b.notes,
+        tenant: {
+          id: b.user?.id,
+          name: `${b.user?.firstName ?? ''} ${b.user?.lastName ?? ''}`.trim(),
+          phone: b.user?.phone,
+        },
+        room: {
+          id: b.room?.id,
+          title: b.room?.title,
+          image: b.room?.images?.[0]?.imageUrl,
+        },
+      })));
+    } catch (error) {
+      Logger.error('Get owner bookings error', error);
+      return sendError(res, 'Failed to fetch bookings', 500, error);
+    }
+  }
 }

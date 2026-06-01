@@ -10,6 +10,7 @@ import { initializeDatabase } from './database/data-source';
 import { errorHandler } from './middleware/errorHandler';
 import { requestLogger } from './middleware/requestLogger';
 import { initWebSocket } from './websocket/tracking';
+import { initChatWebSocket } from './websocket/chat';
 import { authLimiter, apiLimiter } from './middleware/rateLimiter';
 import { swaggerSpec } from './config/swagger';
 
@@ -24,6 +25,7 @@ import paymentRoutes     from './routes/paymentRoutes';
 import reviewRoutes      from './routes/reviewRoutes';
 import adminRoutes       from './routes/adminRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
+import chatRoutes from './routes/chatRoutes';
 
 dotenv.config();
 
@@ -58,6 +60,7 @@ app.use('/api/admin',          adminRoutes);
 app.use('/api/shifts',         shiftRoutes);
 app.use('/api/assignments',    assignmentRoutes);
 app.use('/api/subscription',   subscriptionRoutes);
+app.use('/api/chat', chatRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found', path: req.path });
@@ -72,6 +75,7 @@ const startServer = async () => {
 
     const server = createServer(app);
     initWebSocket(server);
+    initChatWebSocket(server);
 
     server.listen(PORT, () => {
       console.log(`🚀 ShiftNest API running on port ${PORT}`);
