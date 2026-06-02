@@ -43,7 +43,7 @@ export class ChatController {
 
       return sendSuccess(res, 'Conversation ready', {
         id: conv.id,
-        owner: { id: owner.id, name: `${owner.firstName} ${owner.lastName}` },
+        owner: { id: owner.id, name: `${owner.firstName} ${owner.lastName}`, phone: owner.phone ?? null },
       }, 201);
     } catch (error) {
       Logger.error('Create conversation error', error);
@@ -83,6 +83,7 @@ export class ChatController {
           otherUser: {
             id: other?.id,
             name: `${other?.firstName ?? ''} ${other?.lastName ?? ''}`.trim(),
+            phone: other?.phone ?? null,
           },
           role: isOwnerView ? 'owner' : 'tenant',
           lastMessage: c.lastMessage,

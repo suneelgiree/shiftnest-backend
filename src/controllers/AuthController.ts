@@ -31,6 +31,9 @@ export class AuthController {
       if (!email || !password || !firstName || !lastName) {
         return sendError(res, 'email, password, firstName, lastName are required', 400);
       }
+      if (role === 'owner' && (!phone || !phone.trim())) {
+        return sendError(res, 'Phone number is required for owners', 400);
+      }
       const existing = await this.userRepository.findOne({ where: { email } });
       if (existing) return sendError(res, 'Email already registered', 409);
 
