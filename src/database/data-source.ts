@@ -28,6 +28,7 @@ export const AppDataSource = new DataSource({
   require('../models/Review').Review,
   require('../models/Conversation').Conversation,
   require('../models/Message').Message,
+  require('../models/DriverApplication').DriverApplication,
   ],
   migrations: ['dist/database/migrations/**/*.js'],
   subscribers: ['dist/database/subscribers/**/*.js'],

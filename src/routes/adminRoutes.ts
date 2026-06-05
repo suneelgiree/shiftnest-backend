@@ -33,4 +33,8 @@ router.put('/shifts/:id/assign',         (req, res) => ctrl.assignDriver(req, re
 router.get('/drivers',                   (req, res) => ctrl.getAllDrivers(req, res));
 router.post('/drivers',                  (req, res) => ctrl.createDriver(req, res));
 
+// Driver applications
+router.get('/driver-applications',        (req, res) => ctrl.getDriverApplications(req, res));
+router.put('/driver-applications/:id',     (req, res) => ctrl.reviewDriverApplication(req, res));
+
 export default router;

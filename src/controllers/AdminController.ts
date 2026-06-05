@@ -9,6 +9,7 @@ import { Vehicle } from '../models/Vehicle';
 import { Payment } from '../models/Payment';
 import { sendSuccess, sendError } from '../utils/response';
 import { Logger } from '../utils/logger';
+import { DriverApplication } from '../models/DriverApplication';
 
 export class AdminController {
   private userRepo = AppDataSource.getRepository(User);
@@ -16,6 +17,7 @@ export class AdminController {
   private roomBookingRepo = AppDataSource.getRepository(RoomBooking);
   private shiftBookingRepo = AppDataSource.getRepository(ShiftBooking);
   private driverRepo = AppDataSource.getRepository(Driver);
+  private driverAppRepo = AppDataSource.getRepository(DriverApplication);
   private vehicleRepo = AppDataSource.getRepository(Vehicle);
   private paymentRepo = AppDataSource.getRepository(Payment);
 
@@ -377,6 +379,102 @@ export class AdminController {
       })));
     } catch (error) {
       return sendError(res, 'Failed to fetch drivers', 500);
+    }
+  }
+
+  // GET /api/admin/driver-applications?status=PENDING
+  async getDriverApplications(req: Request, res: Response) {
+    try {
+      const status = (req.query.status as string)?.toUpperCase();
+      const qb = this.driverAppRepo
+        .createQueryBuilder('a')
+        .leftJoinAndSelect('a.user', 'user')
+        .orderBy('a.createdAt', 'DESC');
+      if (status) qb.where('a.status = :status', { status });
+
+      const apps = await qb.getMany();
+      return sendSuccess(res, 'Driver applications fetched', apps.map((a) => ({
+        id: a.id,
+        status: a.status,
+        vehicleType: a.vehicleType,
+        plateNumber: a.plateNumber,
+        idCardPhotoUrl: a.idCardPhotoUrl,
+        numberplatePhotoUrl: a.numberplatePhotoUrl,
+        reviewNote: a.reviewNote,
+        createdAt: a.createdAt,
+        applicant: {
+          id: a.user?.id,
+          name: `${a.user?.firstName ?? ''} ${a.user?.lastName ?? ''}`.trim(),
+          email: a.user?.email,
+          phone: a.user?.phone,
+        },
+      })));
+    } catch (error) {
+      Logger.error('Get driver applications error', error);
+      return sendError(res, 'Failed to fetch applications', 500);
+    }
+  }
+
+  // PUT /api/admin/driver-applications/:id  body: { action: 'approve'|'reject', note? }
+  async reviewDriverApplication(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { action, note } = req.body;
+      if (!['approve', 'reject'].includes(action)) {
+        return sendError(res, "action must be 'approve' or 'reject'", 400);
+      }
+
+      const app = await this.driverAppRepo.findOne({ where: { id } });
+      if (!app) return sendError(res, 'Application not found', 404);
+      if (app.status !== 'PENDING') {
+        return sendError(res, `Application already ${app.status.toLowerCase()}`, 409);
+      }
+
+      if (action === 'reject') {
+        app.status = 'REJECTED';
+        app.reviewNote = note || null;
+        await this.driverAppRepo.save(app);
+        Logger.info(`Driver application ${id} rejected`);
+        return sendSuccess(res, 'Application rejected', { id: app.id, status: app.status });
+      }
+
+      // approve: validate vehicle, flip role, create Driver, mark approved
+      const user = await this.userRepo.findOne({ where: { id: app.userId } });
+      if (!user) return sendError(res, 'Applicant user not found', 404);
+
+      const vehicle = await this.vehicleRepo.findOne({
+        where: { vehicleType: app.vehicleType.toUpperCase() },
+      });
+      if (!vehicle) return sendError(res, 'Vehicle type no longer exists', 400);
+
+      // avoid duplicate Driver record if one somehow exists
+      const existing = await this.driverRepo.findOne({ where: { userId: user.id } });
+      if (!existing) {
+        const driver = this.driverRepo.create({
+          userId: user.id,
+          vehicleId: vehicle.id,
+          plateNumber: app.plateNumber,
+        });
+        await this.driverRepo.save(driver);
+      }
+
+      user.role = 'driver';
+      await this.userRepo.save(user);
+
+      app.status = 'APPROVED';
+      app.reviewNote = note || null;
+      await this.driverAppRepo.save(app);
+
+      Logger.info(`Driver application ${id} approved; user ${user.id} is now driver`);
+      return sendSuccess(res, 'Application approved; user is now a driver', {
+        id: app.id,
+        status: app.status,
+        userId: user.id,
+        role: user.role,
+      });
+    } catch (error) {
+      Logger.error('Review driver application error', error);
+      return sendError(res, 'Failed to review application', 500);
     }
   }
 

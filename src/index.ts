@@ -26,6 +26,7 @@ import reviewRoutes      from './routes/reviewRoutes';
 import adminRoutes       from './routes/adminRoutes';
 import subscriptionRoutes from './routes/subscriptionRoutes';
 import chatRoutes from './routes/chatRoutes';
+import driverRoutes from './routes/driverRoutes';
 
 dotenv.config();
 
@@ -61,6 +62,7 @@ app.use('/api/shifts',         shiftRoutes);
 app.use('/api/assignments',    assignmentRoutes);
 app.use('/api/subscription',   subscriptionRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/driver', driverRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ success: false, message: 'Route not found', path: req.path });
